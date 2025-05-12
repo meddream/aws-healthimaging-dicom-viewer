@@ -1,0 +1,64 @@
+digraph INFRA {
+  node [ color = "black", fillcolor = "#E6E6E6", height =1, style = "filled,bold,rounded", fontname = "Arial" ];
+  "ApplicationVpc" [ label = "ApplicationVpc
+(AWS::EC2::VPC)", shape =rectangle ];
+  "AlbSecurityGroup" [ label = "AlbSecurityGroup
+(AWS::EC2::SecurityGroup)", shape =rectangle ];
+  "EcsSecurityGroup" [ label = "EcsSecurityGroup
+(AWS::EC2::SecurityGroup)", shape =rectangle ];
+  "EfsSecurityGroup" [ label = "EfsSecurityGroup
+(AWS::EC2::SecurityGroup)", shape =rectangle ];
+  "MedDreamCluster" [ label = "MedDreamCluster
+(AWS::ECS::Cluster)", shape =rectangle, fillcolor = "#B7E0FF" ];
+  "MedDreamTaskDef" [ label = "MedDreamTaskDef
+(AWS::ECS::TaskDefinition)", shape =rectangle, fillcolor = "#B7E0FF" ];
+  "MedDreamService" [ label = "MedDreamService
+(AWS::ECS::Service)", shape =rectangle, fillcolor = "#B7E0FF" ];
+  "MedDreamLoadBalancer" [ label = "MedDreamLoadBalancer
+(AWS::ElasticLoadBalancingV2::LoadBalancer)", shape =rectangle, fillcolor = "#E78F81" ];
+  "MedDreamDistribution" [ label = "MedDreamDistribution
+(AWS::CloudFront::Distribution)", shape =rectangle, fillcolor = "#E78F81" ];
+  "MedDreamUploaderSaticBucket" [ label = "MedDreamUploaderSaticBucket
+(AWS::S3::Bucket)", shape =cylinder, fillcolor = "#FFF5CD" ];
+  "SessionValidator" [ label = "SessionValidator
+(AWS::Lambda::Function)", shape =rectangle, fillcolor = "#B7E0FF" ];
+  "SessionValidatorAPI" [ label = "SessionValidatorAPI
+(AWS::ApiGateway::RestApi)", shape =rectangle, fillcolor = "#E78F81" ];
+  "HealthImagingSourceBucket" [ label = "HealthImagingSourceBucket
+(AWS::S3::Bucket)", shape =cylinder, fillcolor = "#FFF5CD" ];
+  "HealthImagingOutputBucket" [ label = "HealthImagingOutputBucket
+(AWS::S3::Bucket)", shape =cylinder, fillcolor = "#FFF5CD" ];
+  "HealthImagingDatastore" [ label = "HealthImagingDatastore
+(AWS::HealthImaging::Datastore)", shape =cylinder, fillcolor = "#FFF5CD" ];
+  "RedisCluster" [ label = "RedisCluster
+(AWS::ElastiCache::ReplicationGroup)", shape =cylinder, fillcolor = "#FFCFB3" ];
+  "MedDreamUploaderSourceBucket" [ label = "MedDreamUploaderSourceBucket
+(AWS::S3::Bucket)", shape =cylinder, fillcolor = "#FFF5CD" ];
+  "MedDreamUploaderArtifactBucket" [ label = "MedDreamUploaderArtifactBucket
+(AWS::S3::Bucket)", shape =cylinder, fillcolor = "#FFF5CD" ];
+  "MedDreamUploaderReactPipeline" [ label = "MedDreamUploaderReactPipeline
+(AWS::CodePipeline::Pipeline)", shape =rectangle ];
+  "AlbSecurityGroup" -> "ApplicationVpc";
+  "EcsSecurityGroup" -> "ApplicationVpc";
+  "EcsSecurityGroup" -> "AlbSecurityGroup";
+  "EfsSecurityGroup" -> "ApplicationVpc";
+  "EfsSecurityGroup" -> "EcsSecurityGroup";
+  "MedDreamCluster" -> "ApplicationVpc";
+  "MedDreamTaskDef" -> "MedDreamCluster";
+  "MedDreamService" -> "MedDreamCluster";
+  "MedDreamService" -> "MedDreamTaskDef";
+  "MedDreamService" -> "EcsSecurityGroup";
+  "MedDreamLoadBalancer" -> "ApplicationVpc";
+  "MedDreamLoadBalancer" -> "AlbSecurityGroup";
+  "MedDreamDistribution" -> "MedDreamLoadBalancer";
+  "MedDreamUploaderSaticBucket" -> "MedDreamDistribution";
+  "SessionValidatorAPI" -> "SessionValidator";
+  "HealthImagingDatastore" -> "HealthImagingSourceBucket";
+  "HealthImagingDatastore" -> "HealthImagingOutputBucket";
+  "RedisCluster" -> "ApplicationVpc";
+  "RedisCluster" -> "EfsSecurityGroup";
+  "MedDreamUploaderReactPipeline" -> "MedDreamUploaderSourceBucket";
+  "MedDreamUploaderReactPipeline" -> "MedDreamUploaderArtifactBucket";
+  "MedDreamUploaderReactPipeline" -> "MedDreamUploaderSaticBucket";
+  "MedDreamUploaderReactPipeline" -> "MedDreamDistribution";
+}
