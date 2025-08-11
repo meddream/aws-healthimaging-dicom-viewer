@@ -1,0 +1,14 @@
+.meddream-link {
+    color: #0972d3;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.meddream-link:hover {
+    color: #0459af;
+}
+
+.modal-content p {
+    margin: 5px 0;
+    text-align: center;
+}

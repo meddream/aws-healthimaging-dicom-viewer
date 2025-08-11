@@ -1,0 +1,461 @@
+html, body {
+    height: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    background-color: #2F2F33;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .folder-picker {
+    flex: 1;
+    padding: 20px;
+    margin: 0 auto;
+    color: white;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    width: 95%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+/* Add these styles to fix table alignment */
+.study-table-container {
+    width: 95%;
+    max-width: 80%;
+    margin: 20px auto;
+  }
+  
+
+
+  .study-table thead th,
+  .study-table tbody td {
+    
+    text-align: left;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle; /* Ensures content is vertically centered */
+  }
+  .study-table tbody td {
+    height: 25px; /* Fixed height instead of line-height */
+    text-align: left;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+  }
+  
+  /* Style for the header cells */
+  .study-table thead th {
+    height: 25px;
+    text-align: left;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    color : #FFFFFF;
+    font-weight: normal;
+    background-color: #383842;
+
+  }
+  
+  .study-table {
+    width: 100% !important;
+    margin: 0 auto;
+    table-layout: fixed;
+    border-collapse: collapse;
+    border: .1rem solid #27272b;
+    color : #AFAFAF
+  }
+
+/* Add borders to cells and headers */
+.study-table th,
+.study-table td {
+  border: .1rem solid #27272b;
+}
+
+/* Keep your existing table styles */
+.study-table tbody tr:nth-child(odd) {
+  background-color: #323237;
+}
+
+.study-table tbody tr:nth-child(even) {
+  background-color: #383842;
+}
+
+.study-table tbody tr:hover {
+  background-color: #404040;
+}
+
+/* Keep your existing header and cell alignment */
+.study-table thead th,
+.study-table tbody td {
+  /* padding: 15px; */
+  text-align: left;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+  /* Fix header and cell alignment */
+.study-table thead th,
+.study-table tbody td {
+  /* padding: 15px; */
+  padding: .5em;
+  text-align: left;
+  box-sizing: border-box;
+}
+
+/* Specific style for the checkbox column */
+.study-table thead th:first-child,
+.study-table tbody td:first-child {
+  text-align: center;
+  width: 80px; /* Adjust this value as needed */
+}
+
+/* Optional: if you want to ensure long text doesn't wrap */
+.study-table thead th,
+.study-table tbody td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* Stuy Table Columns widths*/
+.study-table thead th:nth-child(1),
+.study-table tbody td:nth-child(1) {
+  width: 5%; /* Checkbox */
+}
+  
+.study-table thead th:nth-child(2),
+.study-table tbody td:nth-child(2) {
+  width: 20%; /* Patient Name column */
+}
+
+.study-table thead th:nth-child(3),
+.study-table tbody td:nth-child(3) {
+  width: 10%; /* Patient Id column */
+}
+
+.study-table thead th:nth-child(4),
+.study-table tbody td:nth-child(4) {
+  width: 30%; /* Study Description Column */
+}
+
+.study-table thead th:nth-child(5),
+.study-table tbody td:nth-child(5) {
+  width: 10%; /* Study Date Column */
+}
+
+.study-table thead th:nth-child(6),
+.study-table tbody td:nth-child(6) {
+  width: 8%; /* Study Date Column */
+}
+
+.study-table thead th:nth-child(7),
+.study-table tbody td:nth-child(7) {
+  width: 8%; /* Study Date Column */
+}
+
+.study-table thead th:nth-child(8),
+.study-table tbody td:nth-child(8) {
+  width: 9%; /* Study Date Column */
+}
+  
+  
+  
+  /* Ensure the table wrapper doesn't cause misalignment */
+  .dataTables_wrapper {
+    width: 100% !important;
+  }
+  /* If your table has a specific class, you might want to add these styles */
+
+
+  .drop-zone {
+    position: relative;
+    min-height: 150px;
+    border: 2px dashed #ccc;
+    margin-bottom: 20px;
+    width: 80%;
+  }
+  
+  .drop-zone-content {
+    width: 100%;
+    min-height: 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  .drop-zone.processing .drop-zone-content {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  
+  .drop-zone-content p {
+    margin: 0;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+  }
+
+  .drop-zone.dragging {
+    border-color: #3498db;
+    background-color: rgba(52, 152, 219, 0.1);
+  }
+  
+  .input-container {
+    position: relative;
+    margin-top: 10px;
+    display: inline-block;
+    width: 120px;
+    height: 35px;
+  }
+  
+  .input-container::before {
+    content: 'Choose Folder';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #e51b48;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+  }
+  
+  .input-container input[type="file"] {
+    opacity: 0;
+    cursor: pointer;
+    height: 100%;
+    width: 100%;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    width: 100%;
+    background-color: #2F2F33; /* Changed to match body background */
+  }
+  
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 30px; /* Space between logos */
+  }
+  
+  .aws-logo, .meddream-logo {
+    height: 45px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .upload-button-container {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .upload-button {
+    background-color: #e51b48; /* AWS orange */
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .upload-button:hover:not(:disabled) {
+    background-color: #ffffff; /* Darker orange on hover */
+    color : #e51b48
+  }
+  
+  .upload-button:disabled {
+    color: #ffffff; /* Changed to white for better contrast */
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  /* Base checkbox styling */
+.study-table input[type="checkbox"] {
+    appearance: none;
+    border: .15rem solid #d0d0d0;
+    border-radius: .2rem;
+    height: 1.3rem;
+    margin: .6rem .3rem .3rem;
+    width: 1.3rem;
+    cursor: pointer;
+    position: relative;
+    display: grid;
+    place-content: center;
+    background-color: transparent;
+  }
+
+
+  /* Create checkmark using pseudo-element */
+  .study-table input[type="checkbox"]:before {
+  background-color: #d0d0d0;
+  -webkit-clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0, 43% 62%);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0, 43% 62%);
+  content: "";
+  display: block;
+  height: .7rem;
+  margin: .2rem;
+  transform: scale(0);
+  transition: transform .12s ease-in-out;
+  width: .7rem;
+  }
+
+  .study-table  input[type=checkbox]:checked:before {
+    transform: scale(1);
+}
+
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
+}
+
+.pagination-button {
+    /* Match the upload-button styles */
+    min-width: 120px;  /* Set fixed minimum width for consistent sizing */
+    padding: 8px 16px;
+    background-color: #e51b48;  /* Match upload button color */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;  /* Match upload button font size */
+}
+
+.pagination-button:disabled {
+    background-color: #e51b48;  /* Match upload button disabled state */
+    cursor: not-allowed;
+    opacity: 0.7;
+    opacity: 0.4;
+}
+
+.pagination-button:hover:not(:disabled) {
+    background-color: #e51b48;  /* Match upload button hover state */
+    opacity: 0.4;
+}
+
+.page-info {
+    margin: 0 20px;
+    font-size: 14px;
+}
+
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal {
+    background-color: #2f2f33;
+    border-radius: .5rem;
+    padding: 20px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: center;  /* Center horizontally */
+  align-items: center;
+  margin-bottom: 20px;
+  text-align: center;      /* Center the text */
+}
+
+.modal-title {
+  font-size: 18px;
+  font-family: 'Open Sans', sans-serif;
+  color : #e51b48;
+  text-align: center;      /* Center the text */
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.modal-content {
+    margin-bottom: 20px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+    color: #ffffff;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.modal-button {
+  background-color: #e51b48;
+  border: none !important;
+  border-radius: 2px !important;
+  -webkit-border-radius: 2px !important;
+  -moz-border-radius: 2px !important;
+  color: #fff;
+  font-size: 14px;
+  height: 46px;
+  width: 100%;
+}
+
+.modal-button:hover:not(:disabled) {
+  background-color: #ffffff; /* Darker orange on hover */
+  color : #e51b48
+}
+
+/* Alternative CSS styling */
+.version-container {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 20px;
+  margin-bottom: 10px;
+}
+
+.version-label {
+  font-size: 12px;
+  color: #666;
+  padding: 2px 6px;
+  border-radius: 3px;
+ 
+}
