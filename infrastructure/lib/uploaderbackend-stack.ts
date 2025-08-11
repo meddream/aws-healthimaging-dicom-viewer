@@ -66,7 +66,7 @@ export class UploaderBackendStack extends Stack {
           })
       );
 
-      //add stand lambda execution policy to the role
+      //add standard lambda execution policy to the role
       lambdaEdgeRole.addManagedPolicy(
           iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
       );

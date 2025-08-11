@@ -1,5 +1,7 @@
-import { NestedStack, NestedStackProps, Stack, StackProps, Tags } from 'aws-cdk-lib'; 
+import { NestedStack, NestedStackProps, Stack, StackProps, Tags, Duration } from 'aws-cdk-lib'; 
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import { 
   FlowLogDestination, 
   FlowLogTrafficType, 
@@ -13,7 +15,7 @@ import {
 } from 'aws-cdk-lib/aws-ec2';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Construct } from 'constructs';
-
+import { ApplicationLoadBalancer, ApplicationListener, ApplicationProtocol, ListenerAction } from "aws-cdk-lib/aws-elasticloadbalancingv2";
 
 interface NetworkStackProps extends NestedStackProps {
   enableVpcFlowLogs: boolean;
@@ -26,7 +28,7 @@ interface NetworkStackProps extends NestedStackProps {
 export class NetworkStack extends NestedStack {
   /** The VPC instance */
   public readonly vpc: IVpc;
-  
+
   /** Security group for ECS tasks */
   public readonly ecsSecurityGroup: SecurityGroup;
   
@@ -35,6 +37,9 @@ export class NetworkStack extends NestedStack {
   
   /** Security group for the application load balancer */
   public readonly loadBalancerSecurityGroup: SecurityGroup;
+
+  // Remove load balancer and listener - moved to MedDreamStack
+  
 
   // Private fields for security group initialization
   private _ecsSecurityGroup: SecurityGroup;
@@ -53,11 +58,13 @@ export class NetworkStack extends NestedStack {
     this.efsSecurityGroup = securityGroups.efsSecurityGroup;
     this.loadBalancerSecurityGroup = securityGroups.loadBalancerSecurityGroup;
 
+    // Load balancer moved to MedDreamStack
+
     // Configure VPC Flow Logs if enabled
     if (props.enableVpcFlowLogs) {
       this.configureVpcFlowLogs();
     }
-
+    
     // Add tags to resources
     this.addTags();
   }
@@ -103,7 +110,8 @@ export class NetworkStack extends NestedStack {
       allowAllOutbound: false
     });
 
-    // switch statement to figure whihc cloudFrontPrefixListId based on the current region:
+
+    // switch statement to figure which cloudFrontPrefixListId based on the current region:
     let cloudFrontPrefixListId = '';
     switch (this.region) {
       case 'us-east-1':
@@ -138,10 +146,22 @@ export class NetworkStack extends NestedStack {
       allowAllOutbound: true
     });
 
-    // Allow inbound traffic from ALB to ECS container port
+    // Allow inbound traffic from ALB to ECS container port for the viewer
     ecsSecurityGroup.addIngressRule(
       loadBalancerSecurityGroup,
       Port.tcp(8080),
+      'Allow traffic from ALB to MedDream container'
+    );
+    // Allow inbound traffic from ALB to ECS container port for the proxy service
+    ecsSecurityGroup.addIngressRule(
+      loadBalancerSecurityGroup,
+      Port.tcp(3000),
+      'Allow traffic from ALB to MedDream container'
+    );
+    // Allow inbound traffic from ALB to ECS container port for the token service
+    ecsSecurityGroup.addIngressRule(
+      loadBalancerSecurityGroup,
+      Port.tcp(8088),
       'Allow traffic from ALB to MedDream container'
     );
 
@@ -172,6 +192,13 @@ export class NetworkStack extends NestedStack {
       Port.tcp(8080),
       'Allow outbound traffic to ECS tasks'
     );
+
+    loadBalancerSecurityGroup.addIngressRule(
+      ecsSecurityGroup,
+      Port.tcp(80),
+      'Allow inbound traffic from ECS tasks (token validation)'
+    );
+    
 
     // Allow outbound NFS traffic from ECS to EFS
     ecsSecurityGroup.addEgressRule(

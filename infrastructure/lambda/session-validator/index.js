@@ -3,7 +3,7 @@ const { STSClient, AssumeRoleCommand } = require('@aws-sdk/client-sts');
 const stsClient = new STSClient();
 
 const validateMedDreamToken = async (token) => {
-    //execute get request to ww.koin.com/isAuthenticated and add the session id as cookie
+
     const url = "https://"+process.env.MEDDREAM_APP_ENDPOINT+"/isAuthenticated";
     const response = await fetch(url, {
         method: 'GET',

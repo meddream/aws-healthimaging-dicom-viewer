@@ -1,0 +1,53 @@
+# CDK generated files
+cdk.out/
+cdk.context.json
+
+# Compiled JavaScript files
+*.js
+*.d.ts
+*.js.map
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+
+# OS generated files
+.DS_Store
+.DS_Store?
+
+# IDE files
+.vscode/
+.idea/
+
+# AWS credentials
+.aws/
+credentials
+config
+
+# CloudFormation templates (if generated separately)
+*.template
+*.yaml
+*.yml
+
+# Lambda deployment packages
+*.zip
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.temp/

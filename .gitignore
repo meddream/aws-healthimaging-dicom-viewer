@@ -138,3 +138,87 @@ dist
 .pnp.*
 
 **/node_modules/
+
+# CDK specific files
+cdk.out/
+cdk.context.json
+*.d.ts
+*.js.map
+
+# AWS CDK
+infrastructure/cdk.out/
+infrastructure/*.js
+infrastructure/lib/*.js
+infrastructure/bin/*.js
+infrastructure/lambda/*/node_modules/
+
+# React/Node.js build outputs
+uploader/App/build/
+uploader/App/dist/
+uploader/App/.react-router/
+uploader/App/node_modules/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.temp/
+
+# Docker
+.dockerignore
+
+# AWS credentials (if accidentally committed)
+.aws/
+credentials
+config
+
+# CloudFormation
+*.template
+*.yaml
+*.yml
+
+# Lambda deployment packages
+*.zip
+
+# Test coverage
+coverage/
+.nyc_output/
+*.lcov
+
+# TypeScript
+*.tsbuildinfo
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

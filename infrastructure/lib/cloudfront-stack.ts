@@ -1,8 +1,9 @@
 import { RemovalPolicy, Stack, StackProps , Duration, CfnResource, CfnCondition, Fn, CustomResource, NestedStackProps, NestedStack  } from "aws-cdk-lib";
-import { Distribution, OriginRequestPolicy, OriginRequestCookieBehavior, OriginRequestHeaderBehavior, OriginRequestQueryStringBehavior, Function, FunctionCode, OriginProtocolPolicy, ResponseHeadersPolicy, CachePolicy, AllowedMethods, FunctionEventType, SecurityPolicyProtocol, ViewerProtocolPolicy } from "aws-cdk-lib/aws-cloudfront";
+import { Distribution, OriginRequestPolicy, OriginRequestCookieBehavior, OriginRequestHeaderBehavior, OriginRequestQueryStringBehavior, Function, FunctionCode, OriginProtocolPolicy, ResponseHeadersPolicy, CachePolicy, AllowedMethods, FunctionEventType, SecurityPolicyProtocol, ViewerProtocolPolicy, LambdaEdgeEventType, EdgeLambda } from "aws-cdk-lib/aws-cloudfront";
 import * as origins from "aws-cdk-lib/aws-cloudfront-origins";
 import { ApplicationLoadBalancedFargateService } from "aws-cdk-lib/aws-ecs-patterns";
 import { ApplicationLoadBalancer } from "aws-cdk-lib/aws-elasticloadbalancingv2";
+import { FargateService } from "aws-cdk-lib/aws-ecs";
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import { Construct } from "constructs/lib/construct";
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
@@ -10,14 +11,16 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { Cors, LambdaIntegration, MethodLoggingLevel, Model, RestApi } from "aws-cdk-lib/aws-apigateway";
 import { CfnDisk } from "aws-cdk-lib/aws-lightsail";
+import * as path from 'path';
 
 
 
 
 interface cloudFrontStackProps extends NestedStackProps {
-    service: ApplicationLoadBalancedFargateService;
+    loadBalancer: ApplicationLoadBalancer;
     addUploader: boolean;
-    uploaderClientRoleArn : string;
+    uploaderClientRoleArn: string;
+    lambdaEdgeFunction: lambda.Function;
   }
 
 export class CloudFrontStack extends NestedStack {
@@ -26,11 +29,15 @@ export class CloudFrontStack extends NestedStack {
     public readonly uploaderStaticBucket: s3.Bucket;
     public readonly uploaderApiGateway: RestApi;
     public readonly validationFunction : lambda.Function;
-    public readonly validationFunctionRole : iam.Role
+    public readonly validationFunctionRole : iam.Role;
+    public readonly tokenValidatorEdgeFunction: lambda.Function;
     constructor(scope: Construct, id: string, props: cloudFrontStackProps) {
         super(scope, id, props);
 
-        this.distribution = this.createCloudFrontDistribution(props.service.loadBalancer);
+        // Use the Lambda@Edge function passed from the separate stack
+        this.tokenValidatorEdgeFunction = props.lambdaEdgeFunction;
+
+        this.distribution = this.createCloudFrontDistribution(props.loadBalancer);
         this.meddreamUrl = this.distribution.distributionDomainName;
 
         if( props.addUploader)
@@ -226,6 +233,16 @@ export class CloudFrontStack extends NestedStack {
         queryStringBehavior: OriginRequestQueryStringBehavior.all(),
         });
 
+        // Custom Response Headers Policy to remove CSRF headers
+        const removeCsrfPolicy = new ResponseHeadersPolicy(this, "RemoveCsrfPolicy", {
+            responseHeadersPolicyName: `${Stack.of(this).stackName}-remove_CSRF`,
+            comment: "Policy to remove CSRF headers for pixels/store endpoints",
+            removeHeaders: [
+                "x-csrf-token",
+                "x-csrf-header"
+            ]
+        });
+
         const corsFunction = new Function(this, "CorsFunction", {
         code: FunctionCode.fromInline(`
             function handler(event) {
@@ -259,6 +276,13 @@ export class CloudFrontStack extends NestedStack {
         const ALBorigin = new origins.LoadBalancerV2Origin(loadBalancer, {
             protocolPolicy: OriginProtocolPolicy.HTTP_ONLY,
             })
+
+        // Create EdgeLambda configuration for token validation
+        const tokenValidatorEdgeLambda: EdgeLambda = {
+            functionVersion: this.tokenValidatorEdgeFunction.currentVersion,
+            eventType: LambdaEdgeEventType.VIEWER_REQUEST
+        };
+
         const distribution =  new Distribution(this, "MedDreamDistribution", {
         defaultBehavior: {
             origin: ALBorigin,
@@ -275,7 +299,17 @@ export class CloudFrontStack extends NestedStack {
         },
         minimumProtocolVersion: SecurityPolicyProtocol.TLS_V1_2_2019,
         });
-
+        distribution.addBehavior(
+            "/pixels/store*",
+            ALBorigin,
+            {
+            compress: true,
+            cachePolicy: cachePolicy,
+            viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+            originRequestPolicy : OriginRequestPolicy.ALL_VIEWER,
+            }
+        );
         distribution.addBehavior(
             "*/pixels*",
             ALBorigin,
@@ -284,7 +318,9 @@ export class CloudFrontStack extends NestedStack {
             cachePolicy: cachePolicy,
             viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-            originRequestPolicy : OriginRequestPolicy.ALL_VIEWER
+            originRequestPolicy : OriginRequestPolicy.ALL_VIEWER,
+            responseHeadersPolicy: removeCsrfPolicy, // Use custom policy to remove CSRF headers
+            edgeLambdas: [tokenValidatorEdgeLambda],
             }
         );
         distribution.addBehavior(
@@ -295,7 +331,9 @@ export class CloudFrontStack extends NestedStack {
             cachePolicy: cachePolicy,
             viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-            originRequestPolicy : OriginRequestPolicy.ALL_VIEWER
+            originRequestPolicy : OriginRequestPolicy.ALL_VIEWER,
+            responseHeadersPolicy: removeCsrfPolicy, // Use custom policy to remove CSRF headers
+            edgeLambdas: [tokenValidatorEdgeLambda],
             }
         );
         distribution.addBehavior(
@@ -306,25 +344,45 @@ export class CloudFrontStack extends NestedStack {
             cachePolicy: cachePolicy,
             viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
             allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-            originRequestPolicy : OriginRequestPolicy.ALL_VIEWER
+            originRequestPolicy : OriginRequestPolicy.ALL_VIEWER,
+            responseHeadersPolicy: removeCsrfPolicy, // Use custom policy to remove CSRF headers
+            edgeLambdas: [tokenValidatorEdgeLambda],
             }
         );
-        distribution.addBehavior(
-            "*/structure*",
-            ALBorigin,
-            {
-            compress: true,
-            cachePolicy: cachePolicy,
-            viewerProtocolPolicy: ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-            allowedMethods: AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-            originRequestPolicy : OriginRequestPolicy.ALL_VIEWER
-            }
-        );
+
         return distribution
 
 
     }
 
+    private createMedDreamTokenValidatorFunction(): cloudfront.experimental.EdgeFunction {
+        // Create IAM role for Lambda@Edge
+        const edgeFunctionRole = new iam.Role(this, 'MedDreamTokenValidatorRole', {
+            assumedBy: new iam.CompositePrincipal(
+                new iam.ServicePrincipal('lambda.amazonaws.com'),
+                new iam.ServicePrincipal('edgelambda.amazonaws.com')
+            ),
+            description: 'Role for MedDream token validator Lambda@Edge function'
+        });
+
+        // Add basic Lambda execution permissions
+        edgeFunctionRole.addManagedPolicy(
+            iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
+        );
+
+        // Create the Lambda@Edge function
+        const tokenValidatorFunction = new cloudfront.experimental.EdgeFunction(this, 'MedDreamTokenValidator', {
+            runtime: lambda.Runtime.PYTHON_3_11, // or PYTHON_3_11 if you prefer
+            handler: 'index.lambda_handler',
+            code: lambda.Code.fromAsset('./lambda/meddream-token-validator'),
+            timeout: Duration.seconds(5), // Lambda@Edge has a 5-second limit
+            memorySize: 128, // Minimum memory for Lambda@Edge
+            role: edgeFunctionRole,
+            description: 'Validates MedDream session tokens at CloudFront edge locations'
+        });
+
+        return tokenValidatorFunction;
+    }
     getDistributionUrl(): string {
         return this.meddreamUrl;
     }
@@ -348,6 +406,13 @@ export class CloudFrontStack extends NestedStack {
     }
     getValidationFunctionRoleArn() : string {
         return this.validationFunctionRole.roleArn;
+    }
+
+    /**
+     * Returns the Lambda@Edge token validator function
+     */
+    getTokenValidatorEdgeFunction(): lambda.Function {
+        return this.tokenValidatorEdgeFunction;
     }
 }
 
