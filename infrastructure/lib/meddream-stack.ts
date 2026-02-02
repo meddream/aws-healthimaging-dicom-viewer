@@ -43,6 +43,7 @@ import { AccessPoint, FileSystem } from "aws-cdk-lib/aws-efs";
 import { RetentionDays } from "aws-cdk-lib/aws-logs";
 import { Construct } from "constructs";
 import * as elasticache from 'aws-cdk-lib/aws-elasticache'
+import { Bucket } from "aws-cdk-lib/aws-s3";
 
 interface MedDreamStackProps extends NestedStackProps {
     vpc: IVpc;
@@ -62,6 +63,7 @@ interface MedDreamStackProps extends NestedStackProps {
     cpuScaleTarget?: number;   // Optional CPU utilization target percentage
     redisCluster: elasticache.CfnReplicationGroup;
     cloudfrontUrl: string;    //Cloudfront distribution URL.
+    meddreamConfigBucket : Bucket
 }
 
 // Add interface for target group information
@@ -174,16 +176,18 @@ export class MedDreamStack extends NestedStack {
     // Add HealthImaging permissions
     taskRole.addToPolicy(taskAHIAccessPolicy);
 
-    //Add policty to allow to connect to the redis cluster
-      taskRole.addToPolicy(new iam.PolicyStatement({
+    const elasticacheAccessPolicy = new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
           'elasticache:Connect'
         ],
         resources: [
-          `arn:aws:elasticache:${this.region}:${this.account}:replicationgroup:${props.redisCluster.replicationGroupId}`,
+          `arn:aws:elasticache:${this.region}:${this.account}:replicationgroup:${props.redisCluster.ref}`
+          
         ]
-      }));
+      });
+       //Add policty to allow to connect to the redis cluster
+      taskRole.addToPolicy(elasticacheAccessPolicy);
  
     
 
@@ -202,6 +206,22 @@ export class MedDreamStack extends NestedStack {
       userName: medDreamIAMuser.userName,
     });
 
+    //add policy to allow the role to access to the config bucket
+      
+      const configBucketAccessPolicy = new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "s3:ListBucket",
+          "s3:GetObject",
+          "s3:PutObject",
+        ],
+        resources: [
+          props.meddreamConfigBucket.bucketArn,
+          `${props.meddreamConfigBucket.bucketArn}/*`
+        ]
+      });
+
+      taskRole.addToPolicy(configBucketAccessPolicy);
 
     // Update the role's trust policy to allow the user to assume it
     taskRole.assumeRolePolicy?.addStatements(
@@ -213,10 +233,12 @@ export class MedDreamStack extends NestedStack {
 
     medDreamIAMuser.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonElasticFileSystemClientReadWriteAccess'))
     medDreamIAMuser.addToPolicy(taskAHIAccessPolicy);
+    medDreamIAMuser.addToPolicy(elasticacheAccessPolicy);
+    medDreamIAMuser.addToPolicy(configBucketAccessPolicy);
 
     // Create viewer Task Definition
     const viewerTaskDefinition = new FargateTaskDefinition(this, "MedDreamViewerTaskDef", {
-      cpu: 2048,
+      cpu: 4096,
       memoryLimitMiB: 4096,
       volumes: [efsVolume],
       taskRole: taskRole
@@ -259,18 +281,44 @@ export class MedDreamStack extends NestedStack {
       description : "JWT secure key" 
     });
 
+    //Generate the meddream encryption password
+    const meddreamEncryptionPassword = new secretsmanager.Secret(this, 'MeddreamEncryptionPassword', {
+      secretName: `${Stack.of(this).stackName}-encryption-password`,
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ purpose : 'JWT secure key' }),
+        generateStringKey: 'password',
+        excludePunctuation: true,
+        passwordLength: 32,
+        includeSpace: false,
+        requireEachIncludedType: true,
+        excludeCharacters : "!\"#$%&'()*+,-./:;<=>?@[]^_{|}~`\\"
+      },
+      description : "JWT secure key" 
+    });
 
+    //Generate the meddream encryption salt
+    const meddreamEncryptionSalt = new secretsmanager.Secret(this, 'MeddreamEncryptionSalt', {
+      secretName: `${Stack.of(this).stackName}-encryption-salt`,
+      generateSecretString: {
+        secretStringTemplate: JSON.stringify({ purpose : 'JWT secure key' }),
+        generateStringKey: 'password',
+        excludePunctuation: true,
+        passwordLength: 16,
+        includeSpace: false,
+        requireEachIncludedType: true,
+        excludeCharacters : "!\"#$%&'()*+,-./:;<=>?@[]^_{|}~`\\"
+      },
+      description : "JWT secure key" 
+    });
 
-
-
-    // Setting up env variables fot rhe container configuration
+    // Setting up env variables for the container configuration
     let TaskEnvVariables: Record<string, string> = {
         JAVA_OPTS : "-Xmx2048m",
         AWS_REGION: Stack.of(this).region,
         AWS_ACCESS_KEY_ID: medDreamIAMuserAccessKey.ref,
         AWS_SECRET_ACCESS_KEY: medDreamIAMuserAccessKey.attrSecretAccessKey ,
         AWS_DATASTORE_ID: props.datastoreId ,
-        REDIS_URL : "rediss://master.mer1qf7y0sbv8zak.kys1z0.use1.cache.amazonaws.com:6379",
+        REDIS_URL : `rediss://${props.redisCluster.attrPrimaryEndPointAddress}:${props.redisCluster.attrPrimaryEndPointPort}`,
         AUTHENTICATION_JWT_ENABLED : "true",
         AUTHENTICATION_JWT_SECUREKEY : jwtSecurekey.secretValueFromJson("password").toString(),
 
@@ -311,8 +359,19 @@ export class MedDreamStack extends NestedStack {
         COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_DICOMFILEURL : `https://dicom-medical-imaging.${this.region}.amazonaws.com/datastore/${props.datastoreId}/tudies/{study}/series/{series}/instances/{image}`,
         COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_FILEACCEPTHEADER : "application/dicom; transfer-syntax=*",
         COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_DICOMCACHEDIRECTORY : "/data/temp/STORE/AWS/AHI1",
-        COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_STORAGEAPIENABLED : "false",
         COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_STOWRSURL : `https://dicom-medical-imaging.${this.region}.amazonaws.com/datastore/${props.datastoreId}/`,
+
+        //For version 8.8 and above:
+        COM_SOFTNETA_PREPARATION_NFSSYNCHRONIZATIONSINGLESTEPSLEEPTIMEOUTINSECONDS : "1",
+        COM_SOFTNETA_PREPARATION_NFSSYNCHRONIZATIONTIMEOUTINSECONDS : "60",
+        COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_0_STRICTSEARCHISENABLED : "true",
+        COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_STORAGEAPIENABLED : "true",
+        COM_SOFTNETA_MEDDREAM_ENCRYPTIONPASSWORD : meddreamEncryptionPassword.secretValueFromJson("password").toString(),
+        COM_SOFTNETA_MEDDREAM_ENCRYPTIONSALT : meddreamEncryptionSalt.secretValueFromJson("password").toString(),
+        AUTHORIZATION_USERS_0_USERNAME : "admin",
+        AUTHORIZATION_USERS_0_ROLE : "ADMIN,SEARCH,PATIENT_HISTORY,EXPORT_ISO,EXPORT_ARCH,DOCUMENT_VIEW,SHORTCUTS_EDIT,CLEAR_CACHE,REPORT_VIEW,REPORT_UPLOAD,BOUNDING_BOX_VIEW,BOUNDING_BOX_EDIT,FREE_DRAW_VIEW,FREE_DRAW_EDIT,SMART_DRAW_VIEW,SMART_DRAW_EDIT, COPY_TO_DICOM,KO_PR_EDIT,KO_PR_VIEW",
+        COM_SOFTNETA_SETTINGS_AWSREGIONNAME : Stack.of(this).region,
+        COM_SOFTNETA_SETTINGS_AWSBUCKETNAME : props.meddreamConfigBucket.bucketName
 
     };
 
@@ -374,8 +433,8 @@ export class MedDreamStack extends NestedStack {
 
     //Create Proxy Task Definition
     const proxyTaskDefinition = new FargateTaskDefinition(this, "MedDreamProxyTaskDef", {
-      cpu: 512,
-      memoryLimitMiB: 1024,
+      cpu: 1024,
+      memoryLimitMiB: 2048,
       volumes: [efsVolume],
       taskRole: taskRole
     });
@@ -384,8 +443,8 @@ export class MedDreamStack extends NestedStack {
     const proxyContainer = proxyTaskDefinition.addContainer("MedDreamviewerContainer", {
       image: ContainerImage.fromRegistry(props.meddreamProxyContainerUri),
       containerName: "meddreamProxy",
-      cpu: 512,
-      memoryLimitMiB: 1024,
+      cpu: 1024,
+      memoryLimitMiB: 2048,
       logging: LogDriver.awsLogs({
         streamPrefix: "meddreamPoxy",
         logRetention: RetentionDays.ONE_MONTH,

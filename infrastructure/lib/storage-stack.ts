@@ -24,6 +24,7 @@ interface StorageStackProps extends NestedStackProps {
   enable_multi_az: boolean;
   sourceBucketId: string;
   outputBucketId: string;
+  meddreamConfigBucketId: string;
 }
 
 /**
@@ -35,6 +36,9 @@ export class StorageStack extends NestedStack {
   
   /** The EFS access point */
   public readonly efsAccessPoint: AccessPoint;
+
+  /** The S3 bucket for meddream container configurations */
+  public readonly meddreamConfigBucket: Bucket;
   
   /** The S3 bucket for HealthImaging DICOM imports */
   public readonly healthImagingSourceBucket: Bucket;
@@ -51,9 +55,10 @@ export class StorageStack extends NestedStack {
     this.efsAccessPoint = accessPoint;
 
     // Create S3 buckets for HealthImaging
-    const { sourceBucket, outputBucket } = this.createHealthImagingBuckets(props);
+    const { sourceBucket, outputBucket, meddreamConfigBucket } = this.createHealthImagingBuckets(props);
     this.healthImagingSourceBucket = sourceBucket;
     this.healthImagingOutputBucket = outputBucket;
+    this.meddreamConfigBucket = meddreamConfigBucket;
 
     // Add tags to resources
     this.addTags();
@@ -65,6 +70,7 @@ export class StorageStack extends NestedStack {
   private createHealthImagingBuckets(props: StorageStackProps): { 
     sourceBucket: Bucket; 
     outputBucket: Bucket; 
+    meddreamConfigBucket: Bucket;
   } {
     // Common configuration for both buckets
     const commonBucketConfig = {
@@ -101,7 +107,13 @@ export class StorageStack extends NestedStack {
       ],
     });
 
-    return { sourceBucket, outputBucket };
+    // Create meddream configuration bucket
+    const meddreamConfigBucket = new Bucket(this, props.meddreamConfigBucketId, {
+      ...commonBucketConfig,
+      bucketName: PhysicalName.GENERATE_IF_NEEDED,
+      removalPolicy: RemovalPolicy.RETAIN
+    });
+    return { sourceBucket, outputBucket, meddreamConfigBucket };
   }
 
   /**
@@ -171,4 +183,16 @@ export class StorageStack extends NestedStack {
   public getHealthImagingOutputBucketName(): string {
     return this.healthImagingOutputBucket.bucketName;
   }
+
+  public getMeddreamConfigurationBucketArn(): string {
+    return this.meddreamConfigBucket.bucketArn;
+  }
+
+  public getMeddreamConfigurationBucketName(): string {
+    return this.meddreamConfigBucket.bucketName;
+  }
+  public getMeddreamConfigurationBucket(): Bucket {
+    return this.meddreamConfigBucket;
+  }
+
 }

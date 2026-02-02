@@ -8,30 +8,57 @@ interface HealthImagingStackProps extends NestedStackProps {
     datastoreName: string;
     sourceBucket: IBucket;
     outputBucket: IBucket;
+    existingDatastoreArn?: string;
 }
 
 /**
  * Stack that creates an AWS HealthImaging datastore and related resources
  */
 export class HealthimagingStack extends NestedStack {
-    /** The HealthImaging datastore instance */
-    readonly datastore: healthimaging.CfnDatastore;
+    /** The HealthImaging datastore instance (optional if using existing) */
+    readonly datastore?: healthimaging.CfnDatastore;
 
     /** The IAM role for HealthImaging to access S3 buckets */
     readonly healthImagingRole: iam.Role;
 
+    /** Stored datastore ARN */
+    private datastoreArn: string;
+
+    /** Stored datastore ID */
+    private datastoreId: string;
+
     constructor(scope: Construct, id: string, props: HealthImagingStackProps) {
         super(scope, id, props);
 
-        // Create the HealthImaging datastore
-        this.datastore = this.createHealthImagingDatastore(props.datastoreName);
+        // Determine if using existing datastore or creating new one
+        if (props.existingDatastoreArn && props.existingDatastoreArn.trim() !== '') {
+            // Use existing datastore
+            this.datastoreArn = props.existingDatastoreArn;
+            this.datastoreId = HealthimagingStack.parseDatastoreIdFromArn(props.existingDatastoreArn);
+        } else {
+            // Create new datastore
+            this.datastore = this.createHealthImagingDatastore(props.datastoreName);
+            this.datastoreArn = this.datastore.attrDatastoreArn;
+            this.datastoreId = this.datastore.attrDatastoreId;
+        }
+
         // Create IAM role for HealthImaging
         this.healthImagingRole = this.createHealthImagingRole(props.sourceBucket, props.outputBucket);
 
-
-
         // Add tags to the stack
         this.addTags();
+    }
+
+    /**
+     * Parses datastore ID from ARN
+     * Format: arn:aws:medical-imaging:region:account:datastore/datastore-id
+     */
+    static parseDatastoreIdFromArn(arn: string): string {
+        const parts = arn.split('/');
+        if (parts.length < 2) {
+            throw new Error(`Invalid datastore ARN format: ${arn}`);
+        }
+        return parts[parts.length - 1];
     }
 
     /**
@@ -75,7 +102,7 @@ export class HealthimagingStack extends NestedStack {
             actions: [
                 'medical-imaging:StartDICOMImportJob'
             ],
-            resources: [ this.datastore.attrDatastoreArn]
+            resources: [this.datastoreArn]
         }));
 
         return role;
@@ -107,21 +134,21 @@ export class HealthimagingStack extends NestedStack {
      * Returns the ARN of the HealthImaging datastore
      */
     public getDatastoreArn(): string {
-        return this.datastore.attrDatastoreArn;
+        return this.datastoreArn;
     }
 
     /**
      * Returns the ID of the HealthImaging datastore
      */
     public getDatastoreId(): string {
-        return this.datastore.attrDatastoreId;
+        return this.datastoreId;
     }
 
     /**
      * Returns the name of the HealthImaging datastore
      */
     public getDatastoreName(): string {
-        return this.datastore.datastoreName ?? '';
+        return this.datastore?.datastoreName ?? '';
     }
 
     /**

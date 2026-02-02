@@ -13,7 +13,6 @@ import { LambdaEdgeStack } from '../lib/lambda-edge-stack';
 // 
 // AWS HealthImaging is only available in the following regions:
 //   - us-east-1 (US East, N. Virginia)
-//   - us-east-2 (US East, Ohio)
 //   - us-west-2 (US West, Oregon)
 //   - eu-west-1 (Europe, Ireland)
 //   - ap-southeast-2 (Asia Pacific, Sydney)
@@ -24,14 +23,19 @@ import { LambdaEdgeStack } from '../lib/lambda-edge-stack';
 // ********************************
 // Deployment parameters
 // ********************************   
-const STACK_NAME = "meddream3"; 			//Should be unique for each deployment. Keep it less than 47 chars.
-const MEDDREAM_IMAGE_URI = "meddream/aws-healthimaging-dicom-viewer:8.7.0";         //The URI of the meddream application container to deploy.
-const AWS_AHI_PROXY_IMAGE_URI = "docker.io/meddream/aws-healthimaging-proxy:1.0.3"; //The URI of the meddream AHI Proxy service.
-const TOKEN_SERVICE_IMAGE_URI = "docker.io/meddream/token-service:2.1.15";
-const MEDDREAM_HIS_INTEGRATION = "token" //Specify the integration mode between the HIS/RIS and the meddream viewer. Possible values are "token", "study", or "none".
+const STACK_NAME = "meddream880"; 			// Should be unique for each deployment. Keep it less than 47 chars.
+const MEDDREAM_IMAGE_URI = "meddream/aws-healthimaging-dicom-viewer:8.8.0";         // The URI of the meddream application container to deploy.
+const AWS_AHI_PROXY_IMAGE_URI = "docker.io/meddream/aws-healthimaging-proxy:1.0.3"; // The URI of the meddream AHI Proxy service.
+const TOKEN_SERVICE_IMAGE_URI = "docker.io/meddream/token-service:2.1.17";
+const MEDDREAM_HIS_INTEGRATION = "token" // Specify the integration mode between the HIS/RIS and the meddream viewer. Possible values are "token", "study", or "none".
 const ACCESS_LOGS_BUCKET_ARN = "";        // If provided, enables ALB access logs using the specified bucket ARN
 const ENABLE_MULTI_AZ = false;             // If true, uses multi-AZ deployment for ECS
 const ENABLE_VPC_FLOW_LOGS = false;       // If true, enables VPC flow logs to CloudWatch
+
+// Optional: Provide an existing AWS HealthImaging datastore ARN to use instead of creating a new one
+// Format: arn:aws:medical-imaging:region:account:datastore/datastore-id
+// Leave empty ("") to create a new datastore
+const EXISTING_DATASTORE_ARN = "";
 
 const IMPORT_SAMPLE_DATA = false;   // Controls if DICOM samples are loaded in the HealthImaging datastore during the deployment.
 const DEPLOY_UPLOADER = true;     // Controls if the DICOM data importer is deployed at https://[cloudfront_url]/uploader/ during the deployment.
@@ -64,7 +68,6 @@ const HEALTHIMAGING_REGION = app.node.tryGetContext('region') || process.env.CDK
 // Valid HealthImaging regions as of the documentation
 const VALID_HEALTHIMAGING_REGIONS = [
   "us-east-1",     // US East (N. Virginia)
-  "us-east-2",     // US East (Ohio)
   "us-west-2",     // US West (Oregon)
   "eu-west-1",     // Europe (Ireland)
   "ap-southeast-2" // Asia Pacific (Sydney)
@@ -86,6 +89,7 @@ const lambdaEdgeStack = new LambdaEdgeStack(app, `${STACK_NAME}-lambda-edge`, {
     account: process.env.CDK_DEFAULT_ACCOUNT, 
     region: 'us-east-1' // Always deploy Lambda@Edge to us-east-1
   },
+  crossRegionReferences: false,	 // Make true if you deploy stack not in us-east-1						
   description: 'Lambda@Edge functions for MedDream (must be in us-east-1)',
   tags: CUSTOM_TAGS // Apply custom tags
 });
@@ -96,6 +100,7 @@ const masterStack = new MasterStack(app, STACK_NAME, {
     account: process.env.CDK_DEFAULT_ACCOUNT, 
     region: HEALTHIMAGING_REGION // Use the validated region
   },
+  crossRegionReferences: false, // Make true if you deploy stack not in us-east-1							
   accessLogsBucketArn: ACCESS_LOGS_BUCKET_ARN,
   enableMultiAz: ENABLE_MULTI_AZ,
   enableVpcFlowLogs: ENABLE_VPC_FLOW_LOGS,
@@ -105,6 +110,7 @@ const masterStack = new MasterStack(app, STACK_NAME, {
   meddreamProxyContainerUri : AWS_AHI_PROXY_IMAGE_URI,
   meddreamTokenServiceUri : TOKEN_SERVICE_IMAGE_URI,
   meddreamHisIntegration : MEDDREAM_HIS_INTEGRATION,
+  existingDatastoreArn: EXISTING_DATASTORE_ARN,
   lambdaEdgeStack: lambdaEdgeStack, // Pass the Lambda@Edge stack
   customTags: CUSTOM_TAGS, // Pass custom tags to master stack
   tags: CUSTOM_TAGS // Apply custom tags to master stack

@@ -20,10 +20,10 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 
     private createRedisCluster(vpc : ec2.IVpc, ecsSecurityGroup : ec2.SecurityGroup, enableMultiAz: boolean) : elasticache.CfnReplicationGroup
     {
-        // Elasticache security group
+        // ElastiCache security group
         const redis_security_group = new ec2.SecurityGroup(this, "RedisSecurityGroup", {
         vpc: vpc,
-        description: "MedDream - Redis security group",
+        description: "MedDream - Valkey security group",
         allowAllOutbound: true,
         });
 
@@ -82,8 +82,8 @@ import * as ec2 from 'aws-cdk-lib/aws-ec2';
 
     public getredisClusterArn() : string
     {
-       return `arn:aws:elasticache:${this.region}:${this.account}:replicationgroup:${this.redisCluster.replicationGroupId}`
-
+       //return `arn:aws:elasticache:${this.region}:${this.account}:replicationgroup:${this.redisCluster.replicationGroupId}`
+        return this.redisCluster.getAtt("Arn" ).toString();
     }
   
 }

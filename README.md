@@ -101,18 +101,31 @@ The deployment of the `uploader application`,  the `DICOM samples import` and th
 // ********************************
 // Deployment parameters
 // ********************************   
-const STACK_NAME = "meddream1";                    // Should be unique for each deployment. Keep it less than 47 chars.
-const MEDDREAM_IMAGE_URI = "meddream/aws-healthimaging-dicom-viewer:8.7.0";         // The URI of the meddream application container to deploy.
+const STACK_NAME = "meddream880";                    // Should be unique for each deployment. Keep it less than 47 chars.
+
+const MEDDREAM_IMAGE_URI = "meddream/aws-healthimaging-dicom-viewer:8.8.0";         // The URI of the meddream application container to deploy.
 const AWS_AHI_PROXY_IMAGE_URI = "docker.io/meddream/aws-healthimaging-proxy:1.0.3"; // The URI of the meddream AHI Proxy service.
-const TOKEN_SERVICE_IMAGE_URI = "docker.io/meddream/token-service:2.1.15";          // Token service container URI
+const TOKEN_SERVICE_IMAGE_URI = "docker.io/meddream/token-service:2.1.17";          // Token service container URI
+
 const MEDDREAM_HIS_INTEGRATION = "none";           // Integration mode: "token", "study", or "none"
+
+const EXISTING_DATASTORE_ARN = ""; 	// Provide an existing AWS HealthImaging datastore ARN to use instead of creating a new one. 
+									// Format: arn:aws:medical-imaging:region:account:datastore/datastore-id
+									// Leave empty ("") to create a new datastore
+
 const ACCESS_LOGS_BUCKET_ARN = "";                 // If provided, enables ALB access logs using the specified bucket ARN
 const ENABLE_MULTI_AZ = false;                     // If true, uses multi-AZ deployment for ECS
 const ENABLE_VPC_FLOW_LOGS = false;                // If true, enables VPC flow logs to CloudWatch
 
 const IMPORT_SAMPLE_DATA = false;                   // Controls if DICOM samples are loaded in the HealthImaging datastore during the deployment.
-const DEPLOY_UPLOADER = true;                      // Controls if the DICOM data importer is deployed at https://[cloudfront_url]/uploader/ during the deployment.
+const DEPLOY_UPLOADER = true;                      // Controls if the DICOM data importer is deployed at https://[cloudfront_url]/uploader/index.html during the deployment.
+
 ```
+
+### Deploying the stact in other region than us-east-1
+
+If you want to deploy the stack in other region than us-east-1, please set crossRegionReferences: true
+
 
 ### Multi-AZ Deployment Configuration
 
@@ -263,7 +276,7 @@ Edit `infrastructure/bin/cdk.ts` to configure your deployment:
 
 ```typescript
 // Required: Set unique stack name
-const STACK_NAME = "meddream1";
+const STACK_NAME = "meddream880";
 
 // Configure deployment options
 const ENABLE_MULTI_AZ = false;        // Set to true for production
@@ -301,8 +314,8 @@ cdk deploy --all --require-approval never
 After successful deployment, you'll see outputs like:
 
 ```
-✅  meddream1-lambda-edge
-✅  meddream1
+✅  meddream880-lambda-edge
+✅  meddream880
 
 Outputs:
 meddream1.AdminSecretArn = arn:aws:secretsmanager:us-east-1:123456789012:secret:...
@@ -313,10 +326,10 @@ meddream1.UpdatedTaskDefinitionArn = arn:aws:ecs:us-east-1:123456789012:task-def
 ### Step 5: Access Your Application
 
 1. **MedDream Viewer**: `https://<CloudFrontDistributionUrl>/`
-2. **Uploader Interface**: `https://<CloudFrontDistributionUrl>/uploader/` (if enabled)
+2. **Uploader Interface**: `https://<CloudFrontDistributionUrl>/uploader/index.html` (if enabled)
 3. **Admin Credentials**: Retrieve from AWS Secrets Manager using the provided ARN
 4. **MedDream Viewer via token disabled integration**: `https://<CloudFrontDistributionUrl>/?study=` (if enabled)
-5. **MedDream Viewer via token еnabled integration**: `https://<CloudFrontDistributionUrl>/?study=` (if enabled)
+5. **MedDream Viewer via token еnabled integration**: `https://<CloudFrontDistributionUrl>/?token=` (if enabled)
 6. **MedDream Token Service**: `https://<CloudFrontDistributionUrl>/v4/generate` (if enabled)
 7. **MedDream Token Service User Name**: Retrieve from AWS Secrets Manager using the provided ARN
 8. **MedDream Token Service Password**: Retrieve from AWS Secrets Manager using the provided ARN
@@ -387,7 +400,7 @@ You can log on to the MedDream viewer application by navigating to the CloudFron
 ```
 [██████████████████████████████████████████████████████████] (72/12)
 
- ✅  meddream-1
+ ✅  meddream880
 
 ✨  Deployment time: 2252.93s
 
@@ -437,7 +450,7 @@ The uploader React application can be modified and tested locally. To work on th
 1. Navigate to the uploader directory
 2. Install dependencies: `npm install`
 3. Run the development server: `npm run dev`
-4. The local website will be accessible at `http://localhost:5173/uploader/`.
+4. The local website will be accessible at `http://localhost:5173/uploader/index.html`.
 4. Make and test your changes locally
 
 

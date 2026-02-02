@@ -1,6 +1,7 @@
 import { CfnOutput, Stack, StackProps, Tags } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment'
 import { NetworkStack } from './networking-stack';
 import { StorageStack } from './storage-stack';
 import { MedDreamStack, ServiceTargetGroup } from './meddream-stack';
@@ -26,6 +27,7 @@ interface MasterStackProps extends StackProps {
     meddreamProxyContainerUri : string;
     meddreamTokenServiceUri : string;
     meddreamHisIntegration : string;
+    existingDatastoreArn?: string;
     lambdaEdgeStack: LambdaEdgeStack;
     customTags: { [key: string]: string }; // Add custom tags property
 }
@@ -52,7 +54,8 @@ export class MasterStack extends Stack {
         efsSecurityGroup: networkStack.efsSecurityGroup,
         enable_multi_az: props.enableMultiAz,
         sourceBucketId: 'HealthImagingSourceBucket',
-        outputBucketId: 'HealthImagingOutputBucket'
+        outputBucketId: 'HealthImagingOutputBucket',
+        meddreamConfigBucketId: 'MedDreamConfigBucket'
     });
     this.applyCustomTags(props.customTags, storageStack);
 
@@ -62,10 +65,16 @@ export class MasterStack extends Stack {
         //env: props.env,
         datastoreName: this.stackName.toLowerCase(),
         sourceBucket: storageStack.healthImagingSourceBucket,
-        outputBucket: storageStack.healthImagingOutputBucket
+        outputBucket: storageStack.healthImagingOutputBucket,
+        existingDatastoreArn: props.existingDatastoreArn
     });
     this.applyCustomTags(props.customTags, healthimagingStack);
 
+
+    new s3deploy.BucketDeployment(this, 'configDeploy', {
+    sources: [s3deploy.Source.asset('./meddreamconfig/settings.zip')], // Point to your local directory or a specific .zip file
+    destinationBucket: storageStack.getMeddreamConfigurationBucket(),
+    });
 
     if(props.importSampleData)
     {
@@ -116,7 +125,8 @@ export class MasterStack extends Stack {
         meddreamProxyContainerUri : props.meddreamProxyContainerUri,
         meddreamTokenServiceUri : props.meddreamTokenServiceUri,
         meddreamHisIntegration : props.meddreamHisIntegration,
-        cloudfrontUrl: "placeholder.example.com" // Placeholder - will be updated by custom resource
+        cloudfrontUrl: "placeholder.example.com", // Placeholder - will be updated by custom resource,
+        meddreamConfigBucket : storageStack.getMeddreamConfigurationBucket()
     });
     this.applyCustomTags(props.customTags, meddreamStack);
 

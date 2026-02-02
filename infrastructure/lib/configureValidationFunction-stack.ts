@@ -33,7 +33,7 @@ export class configureValidationFunctionStack extends NestedStack {
         // const validationFunction = lambda.Function.fromFunctionArn(this, 'validationFunction', props.validationFunctionArn);
         // const validatorFunctionRole = iam.Role.fromRoleArn(this, 'ValidatorRole', props.validatorFunctionRoleArn);
 
-        // //allows the session-validator function Role to assume the client uploader role, so that it can rquests STS creds.
+        // //allows the session-validator function Role to assume the client uploader role, so that it can requests STS creds.
         // const uploaderClientRole = iam.Role.fromRoleArn(this, 'UploaderClientRole', props.uploaderClientRoleArn, {mutable: true});
         // uploaderClientRole.grantAssumeRole(validatorFunctionRole);
 
