@@ -239,7 +239,7 @@ export class MedDreamStack extends NestedStack {
     // Create viewer Task Definition
     const viewerTaskDefinition = new FargateTaskDefinition(this, "MedDreamViewerTaskDef", {
       cpu: 4096,
-      memoryLimitMiB: 4096,
+      memoryLimitMiB: 8192,
       volumes: [efsVolume],
       taskRole: taskRole
     });
