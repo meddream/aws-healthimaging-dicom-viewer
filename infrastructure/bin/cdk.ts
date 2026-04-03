@@ -23,10 +23,10 @@ import { LambdaEdgeStack } from '../lib/lambda-edge-stack';
 // ********************************
 // Deployment parameters
 // ********************************   
-const STACK_NAME = "meddream880"; 			// Should be unique for each deployment. Keep it less than 47 chars.
-const MEDDREAM_IMAGE_URI = "meddream/aws-healthimaging-dicom-viewer:8.8.0";         // The URI of the meddream application container to deploy.
-const AWS_AHI_PROXY_IMAGE_URI = "docker.io/meddream/aws-healthimaging-proxy:1.0.3"; // The URI of the meddream AHI Proxy service.
-const TOKEN_SERVICE_IMAGE_URI = "docker.io/meddream/token-service:2.1.17";
+const STACK_NAME = "meddream881"; 			// Should be unique for each deployment. Keep it less than 47 chars.
+const MEDDREAM_IMAGE_URI = "meddream/aws-healthimaging-dicom-viewer:8.8.1";         // The URI of the meddream application container to deploy.
+const AWS_AHI_PROXY_IMAGE_URI = "docker.io/meddream/aws-healthimaging-proxy:1.0.4"; // The URI of the meddream AHI Proxy service.
+const TOKEN_SERVICE_IMAGE_URI = "docker.io/meddream/token-service:2.1.19";
 const MEDDREAM_HIS_INTEGRATION = "token" // Specify the integration mode between the HIS/RIS and the meddream viewer. Possible values are "token", "study", or "none".
 const ACCESS_LOGS_BUCKET_ARN = "";        // If provided, enables ALB access logs using the specified bucket ARN
 const ENABLE_MULTI_AZ = false;             // If true, uses multi-AZ deployment for ECS
