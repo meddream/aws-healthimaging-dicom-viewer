@@ -101,7 +101,7 @@ The deployment of the `uploader application`,  the `DICOM samples import` and th
 // ********************************
 // Deployment parameters
 // ********************************   
-const STACK_NAME = "meddream880";                    // Should be unique for each deployment. Keep it less than 47 chars.
+const STACK_NAME = "meddream881";                    // Should be unique for each deployment. Keep it less than 47 chars.
 
 const MEDDREAM_IMAGE_URI = "meddream/aws-healthimaging-dicom-viewer:8.8.1";         // The URI of the meddream application container to deploy.
 const AWS_AHI_PROXY_IMAGE_URI = "docker.io/meddream/aws-healthimaging-proxy:1.0.4"; // The URI of the meddream AHI Proxy service.
