@@ -35,7 +35,7 @@ import { LambdaEdgeStack } from '../lib/lambda-edge-stack';
 // ********************************
 // Deployment parameters
 // ********************************
-const STACK_NAME = "meddream881";           // Should be unique for each deployment. Keep it less than 47 chars.
+const STACK_NAME = "meddream890";           // Should be unique for each deployment. Keep it less than 47 chars.
 const MEDDREAM_HIS_INTEGRATION = "token";  // Specify the integration mode between the HIS/RIS and the meddream viewer. Possible values are "token", "study", or "none".
 const ACCESS_LOGS_BUCKET_ARN = "";         // If provided, enables ALB access logs using the specified bucket ARN
 const ENABLE_MULTI_AZ = false;             // If true, uses multi-AZ deployment for ECS
@@ -85,14 +85,14 @@ let AWS_AHI_PROXY_IMAGE_URI: string;
 let TOKEN_SERVICE_IMAGE_URI: string;
 
 if (deploymentMode === 'marketplace') {
-  MEDDREAM_IMAGE_URI      = `${MARKETPLACE_ECR}/meddream-dicom-viewer:8.8.1`;
+  MEDDREAM_IMAGE_URI      = `${MARKETPLACE_ECR}/meddream-dicom-viewer:8.9.0`;
   AWS_AHI_PROXY_IMAGE_URI = `${MARKETPLACE_ECR}/meddream-healthimaging-proxy:1.0.4`;
-  TOKEN_SERVICE_IMAGE_URI = `${MARKETPLACE_ECR}/meddream-token-service:2.1.19`;
+  TOKEN_SERVICE_IMAGE_URI = `${MARKETPLACE_ECR}/meddream-token-service:2.1.23`;
 } else {
   // dockerhub (default)
-  MEDDREAM_IMAGE_URI      = `${DOCKERHUB}/aws-healthimaging-dicom-viewer:8.8.1`;
+  MEDDREAM_IMAGE_URI      = `${DOCKERHUB}/aws-healthimaging-dicom-viewer:8.9.0`;
   AWS_AHI_PROXY_IMAGE_URI = `${DOCKERHUB}/aws-healthimaging-proxy:1.0.4`;
-  TOKEN_SERVICE_IMAGE_URI = `${DOCKERHUB}/token-service:2.1.19`;
+  TOKEN_SERVICE_IMAGE_URI = `${DOCKERHUB}/token-service:2.1.23`;
 }
 
 console.log(`Deployment mode: ${deploymentMode}`);
