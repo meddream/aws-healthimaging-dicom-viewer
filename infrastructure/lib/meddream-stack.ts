@@ -318,7 +318,12 @@ export class MedDreamStack extends NestedStack {
         AWS_ACCESS_KEY_ID: medDreamIAMuserAccessKey.ref,
         AWS_SECRET_ACCESS_KEY: medDreamIAMuserAccessKey.attrSecretAccessKey ,
         AWS_DATASTORE_ID: props.datastoreId ,
-        REDIS_URL : `rediss://${props.redisCluster.attrPrimaryEndPointAddress}:${props.redisCluster.attrPrimaryEndPointPort}`,
+        REDIS_CONFIG_SERVER : JSON.stringify({
+          singleServerConfig: {
+            address: `rediss://${props.redisCluster.attrPrimaryEndPointAddress}:${props.redisCluster.attrPrimaryEndPointPort}`,
+            sslEnableEndpointIdentification: true
+          }
+        }),
         AUTHENTICATION_JWT_ENABLED : "true",
         AUTHENTICATION_JWT_SECUREKEY : jwtSecurekey.secretValueFromJson("password").toString(),
 
@@ -390,7 +395,12 @@ export class MedDreamStack extends NestedStack {
     
     if(props.redisCluster)
       {
-        viewerContainer.addEnvironment("REDIS_URL", `rediss://${props.redisCluster.attrPrimaryEndPointAddress}:${props.redisCluster.attrPrimaryEndPointPort}`)
+        viewerContainer.addEnvironment("REDIS_CONFIG_SERVER", JSON.stringify({
+          singleServerConfig: {
+            address: `rediss://${props.redisCluster.attrPrimaryEndPointAddress}:${props.redisCluster.attrPrimaryEndPointPort}`,
+            sslEnableEndpointIdentification: true
+          }
+        }))
       }
 
     // Add viewerContainer mount point for EFS
@@ -605,7 +615,12 @@ export class MedDreamStack extends NestedStack {
             SECURITY_SERVICE_PASSWORD : tokenServiceAuthPassword.secretValueFromJson("password").toString(),
             SECURITY_SERVICE_NAME : tokenServiceAuthUsername.secretValueFromJson("password").toString(),
             SPRING_PROFILES_INCLUDE : "redis",
-            TOKEN_REDIS_URL : `rediss://${props.redisCluster!.attrPrimaryEndPointAddress}:${props.redisCluster!.attrPrimaryEndPointPort}`,
+            REDIS_CONFIG_SERVER : JSON.stringify({
+              singleServerConfig: {
+                address: `rediss://${props.redisCluster!.attrPrimaryEndPointAddress}:${props.redisCluster!.attrPrimaryEndPointPort}`,
+                sslEnableEndpointIdentification: true
+              }
+            }),
             COM_SOFTNETA_TOKEN_ENCRYPTION_SECRETKEY : tokenEncryptionSecretkey.secretValueFromJson("password").toString(),
             COM_SOFTNETA_TOKEN_ENCRYPTION_INITIALIZATIONVECTOR : tokenInitalizationVector.secretValueFromJson("password").toString()
         }
