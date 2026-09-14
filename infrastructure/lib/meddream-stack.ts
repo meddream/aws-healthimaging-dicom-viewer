@@ -361,7 +361,7 @@ export class MedDreamStack extends NestedStack {
         COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_SEARCHAPIENABLED : "false",
         COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_AUTH_TYPE : "aws",
         COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_AWS_REGION : this.region,
-        COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_DICOMFILEURL : `https://dicom-medical-imaging.${this.region}.amazonaws.com/datastore/${props.datastoreId}/tudies/{study}/series/{series}/instances/{image}`,
+        COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_DICOMFILEURL : `https://dicom-medical-imaging.${this.region}.amazonaws.com/datastore/${props.datastoreId}/studies/{study}/series/{series}/instances/{image}`,
         COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_FILEACCEPTHEADER : "application/dicom; transfer-syntax=*",
         COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_DICOMCACHEDIRECTORY : "/data/temp/STORE/AWS/AHI1",
         COM_SOFTNETA_MEDDREAM_PACS_CONFIGURATIONS_1_STOWRSURL : `https://dicom-medical-imaging.${this.region}.amazonaws.com/datastore/${props.datastoreId}/`,
