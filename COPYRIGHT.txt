@@ -1,0 +1,163 @@
+================================================================================
+                              COPYRIGHT NOTICE
+================================================================================
+
+MedDream
+Copyright (c) 2026 MedDream UAB. All rights reserved.
+
+Copyright holder / Licensor:
+    MedDream UAB
+    A private limited liability company registered with the Register of Legal
+    Persons of the Republic of Lithuania
+    Legal person's code: 306968708
+    Registered office: K. Barsausko str. 59, Kaunas, Republic of Lithuania
+    Web: https://www.meddream.com
+
+--------------------------------------------------------------------------------
+PROPRIETARY AND CONFIDENTIAL
+--------------------------------------------------------------------------------
+
+This software ("MedDream", the "Software"), including but not limited to its
+source code, object code, architecture, structure, design, user interface,
+algorithms, documentation, and all related materials, is the confidential and
+proprietary property of MedDream UAB. It is protected by copyright law, trade
+secret law, and other intellectual property laws, as well as by international
+treaties.
+
+The Software is licensed, not sold. Title, copyright, trade secret, patent, and
+all other intellectual property rights in and to the proprietary components of
+the Software remain at all times the exclusive property of MedDream UAB. No
+ownership right or interest is transferred to any user, licensee, or recipient.
+
+--------------------------------------------------------------------------------
+RESTRICTIONS
+--------------------------------------------------------------------------------
+
+Except to the extent expressly authorized in a written license agreement with
+MedDream UAB (see the End User License Agreement, "EULA"), or to the extent
+permitted by applicable mandatory law, no part of the Software may be:
+
+    - used, accessed, or executed other than as expressly authorized;
+    - copied, stored, reproduced, published, distributed, or disclosed to any
+      third party;
+    - modified, adapted, translated, or used to create derivative works;
+    - decompiled, disassembled, reverse engineered, or otherwise reduced to
+      human-perceivable form; or
+    - stripped of, or have altered or obscured, any copyright, trademark, or
+      other proprietary notice, label, or mark.
+
+Any unauthorized use, reproduction, modification, or distribution of the
+Software, or of any portion of it, is strictly prohibited and may result in
+severe civil and criminal liability.
+
+Notwithstanding the restriction on decompilation, disassembly, and reverse
+engineering above, nothing in this notice excludes or limits any right that
+cannot be excluded or limited under applicable mandatory law, including the
+right to decompile for interoperability purposes and the right to observe,
+study, or test the functioning of the Software where such rights are granted
+on a non-waivable basis (for example, under Articles 5 and 6 of EU Directive
+2009/24/EC and equivalent national laws). Any such activity is permitted only
+to the extent, and strictly for the purposes, that mandatory law allows.
+
+--------------------------------------------------------------------------------
+VALID LICENSE REQUIRED
+--------------------------------------------------------------------------------
+
+No person or entity may install, access, or use the Software unless they hold a
+valid license issued by MedDream UAB, whether obtained directly from MedDream
+UAB or through an authorized distributor, sub-distributor, reseller, software
+vendor, integrator, OEM partner, or other authorized participant in MedDream
+UAB's distribution chain.
+
+A license is valid only to the extent that the rights granted originate from,
+and do not exceed, the authorization granted by MedDream UAB. No party in the
+distribution chain may grant rights broader than those it has been authorized to
+grant. A valid license may be either a paid license or, where offered, a free
+evaluation or demo license, provided it is used strictly within its agreed scope
+and term.
+
+Installing, accessing, or using the Software without a valid license is
+unauthorized and strictly prohibited.
+
+The scope of a license includes, among other things, the permitted number of
+servers, instances, workstations, devices, installations, users, number of
+examinations processed and concurrent connections. The Software, including any
+of its components installed on user computers, may be installed and used only
+within those licensed limits.
+
+Any installation, copy, use, or deployment of the Software or its components
+beyond the licensed scope - including on additional servers, instances,
+workstations, devices, or installations, or by exceeding the licensed number of
+users or concurrent connections or number of examinations processed - requires
+an appropriate license from MedDream UAB and is otherwise prohibited.
+
+These restrictions apply regardless of whether the Software includes technical
+mechanisms that enforce or monitor license compliance.
+
+--------------------------------------------------------------------------------
+GOVERNING TERMS
+--------------------------------------------------------------------------------
+
+Use of the Software is governed exclusively by the MedDream End User License
+Agreement (EULA). By installing or using the Software, you agree to be bound by
+the EULA. If you do not agree to its terms, you must not install or use the
+Software.
+
+--------------------------------------------------------------------------------
+GOVERNING LAW
+--------------------------------------------------------------------------------
+
+Unless otherwise expressly agreed in a written license agreement, all matters
+relating to the Software and this notice are governed by the laws of the Republic
+of Lithuania, without regard to conflict-of-laws principles, and subject to the
+dispute-resolution terms of the applicable EULA.
+
+--------------------------------------------------------------------------------
+EXPORT CONTROL AND SANCTIONS COMPLIANCE
+--------------------------------------------------------------------------------
+
+The Software may be subject to export control and sanctions laws of the European
+Union, the United States, and other jurisdictions. You may not export, re-export,
+provide, or otherwise make the Software available, directly or indirectly, to any
+country, entity, or person where doing so is prohibited by applicable export
+control or sanctions laws, including to any party on an applicable restricted-
+party or sanctions list. You are responsible for compliance with all such laws
+in any jurisdiction in which you access or use the Software.
+
+--------------------------------------------------------------------------------
+INFRINGEMENT REPORTING
+--------------------------------------------------------------------------------
+
+To report suspected infringement, unauthorized use, or unlicensed deployment of
+the Software, or to submit a notice under the U.S. Digital Millennium Copyright
+Act (DMCA) or comparable legislation, contact:
+
+    MedDream UAB - Legal / IP
+    K. Barsausko str. 59, Kaunas, Republic of Lithuania
+    Email: legal@meddream.com
+
+MedDream UAB responds to properly substantiated notices in accordance with
+applicable law.
+
+--------------------------------------------------------------------------------
+TRADEMARKS
+--------------------------------------------------------------------------------
+
+"MedDream" and the MedDream logo are trademarks of MedDream UAB. All other names,
+logos, and marks are the property of their respective owners.
+
+--------------------------------------------------------------------------------
+THIRD-PARTY COMPONENTS
+--------------------------------------------------------------------------------
+
+This Software incorporates third-party open-source and/or licensed components
+that remain the property of their respective owners and are governed by their
+own license terms. Those components, their licenses, and any required
+attributions are listed in the accompanying LICENSE.txt file. Nothing in this
+notice modifies, limits, or supersedes the terms applicable to such third-party
+components.
+
+================================================================================
+MedDream UAB - K. Barsausko str. 59, Kaunas, Republic of Lithuania
+https://www.meddream.com
+================================================================================
